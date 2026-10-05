@@ -3,13 +3,16 @@
 # ============================================================================
 #
 # Targets:
-#   make cpu        — Build CPU version
-#   make cuda       — Build CUDA version
-#   make all        — Build both
-#   make run_cpu    — Build and run CPU version
-#   make run_cuda   — Build and run CUDA version
-#   make benchmark  — Run both versions across multiple grid sizes
-#   make clean      — Remove compiled binaries
+#   make cpu          — Build CPU version
+#   make cuda         — Build CUDA version
+#   make terminal     — Build terminal live interactive version
+#   make all          — Build both CPU and CUDA
+#   make run_cpu      — Build and run CPU version
+#   make run_cuda     — Build and run CUDA version
+#   make run_terminal — Build and run live terminal animated version
+#   make live         — Open live web interactive simulator in browser
+#   make benchmark    — Run both versions across multiple grid sizes
+#   make clean        — Remove compiled binaries
 # ============================================================================
 
 CC       = gcc
@@ -24,7 +27,7 @@ ITERATIONS  = 100
 # Grid sizes for benchmarking
 BENCH_SIZES = 128 256 512 1024 2048 4096
 
-.PHONY: all cpu cuda run_cpu run_cuda benchmark clean
+.PHONY: all cpu cuda terminal run_cpu run_cuda run_terminal live benchmark clean
 
 all: cpu cuda
 
@@ -33,6 +36,10 @@ cpu: game_of_life_cpu
 
 game_of_life_cpu: game_of_life_cpu.c
 	$(CC) $(CFLAGS) -o $@ $< -lm
+
+# ── Terminal Live Build ──────────────────────────────────────────────────
+terminal:
+	$(CC) $(CFLAGS) -o game_of_life_terminal game_of_life_terminal.c
 
 # ── CUDA Build ───────────────────────────────────────────────────────────
 cuda: game_of_life_cuda
@@ -46,6 +53,13 @@ run_cpu: cpu
 
 run_cuda: cuda
 	./game_of_life_cuda $(GRID_SIZE) $(ITERATIONS)
+
+run_terminal:
+	@if not exist game_of_life_terminal.exe $(CC) $(CFLAGS) -o game_of_life_terminal game_of_life_terminal.c 2>nul || true
+	./game_of_life_terminal 64 32 50 42
+
+live:
+	explorer.exe index.html || start index.html || xdg-open index.html
 
 # ── Benchmark across multiple grid sizes ─────────────────────────────────
 benchmark: cpu cuda
@@ -65,4 +79,4 @@ benchmark: cpu cuda
 
 # ── Cleanup ──────────────────────────────────────────────────────────────
 clean:
-	rm -f game_of_life_cpu game_of_life_cuda game_of_life_cpu.exe game_of_life_cuda.exe
+	rm -f game_of_life_cpu game_of_life_cuda game_of_life_terminal game_of_life_cpu.exe game_of_life_cuda.exe game_of_life_terminal.exe

@@ -12,28 +12,48 @@ This directory contains a complete implementation and performance comparison of 
 |---|---|
 | `game_of_life_cpu.c` | CPU implementation using 2D arrays in C |
 | `game_of_life_cuda.cu` | CUDA GPU implementation with shared memory optimization |
-| `Makefile` | Build system for compiling and benchmarking |
+| `game_of_life_terminal.c` | Real-time animated terminal simulation in C |
+| `index.html` | Live interactive web simulation GUI (Canvas + Pan/Zoom + Presets) |
+| `style.css` | Modern dark-mode glassmorphic styling and themes |
+| `app.js` | High-performance TypedArray simulation engine & telemetry |
+| `Makefile` | Build system for compiling, running, and benchmarking |
 | `report.md` | Detailed performance comparison report |
 | `README.md` | This file |
 
 ## Quick Start
 
+### 1. Live Interactive Web Simulation (Recommended)
+Open the browser GUI with pan, zoom, custom presets, speed slider, and real-time telemetry:
 ```bash
-# Build both versions
-make all
+# In Git Bash / PowerShell:
+explorer.exe index.html
+# or with Make:
+make live
+```
 
-# Run CPU version (default: 1024×1024, 100 iterations)
+### 2. Live Terminal Animated Simulation
+Watch the simulation animate in real time directly inside your terminal:
+```bash
+# Build and run live terminal simulation (64x32 grid, 50ms delay)
+make run_terminal
+
+# Or run directly with custom dimensions [width] [height] [delay_ms]:
+./game_of_life_terminal 80 40 30
+```
+
+### 3. Benchmark Runs (CPU & CUDA)
+```bash
+# Run CPU batch calculation (default: 1024×1024, 100 iterations)
 make run_cpu
 
-# Run CUDA version
+# Run custom CPU grid size & iterations
+./game_of_life_cpu 2048 100
+
+# Run CUDA batch calculation (requires NVIDIA GPU / Google Colab)
 make run_cuda
 
-# Benchmark across multiple grid sizes
+# Benchmark CPU across multiple grid sizes
 make benchmark
-
-# Custom grid size
-./game_of_life_cpu 2048 100
-./game_of_life_cuda 2048 100
 ```
 
 ## Key Results
