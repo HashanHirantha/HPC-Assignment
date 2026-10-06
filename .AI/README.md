@@ -18,6 +18,7 @@ This directory contains a complete implementation and performance comparison of 
 | `app.js` | High-performance TypedArray simulation engine & telemetry |
 | `Makefile` | Build system for compiling, running, and benchmarking |
 | `report.md` | Detailed performance comparison report |
+| `RUN_CUDA_ON_COLAB.md` | Step-by-step guide to run CUDA code on Google Colab (Free NVIDIA GPU) |
 | `README.md` | This file |
 
 ## Quick Start
@@ -50,6 +51,7 @@ make run_cpu
 ./game_of_life_cpu 2048 100
 
 # Run CUDA batch calculation (requires NVIDIA GPU / Google Colab)
+# If your laptop has no NVIDIA GPU, follow: RUN_CUDA_ON_COLAB.md
 make run_cuda
 
 # Benchmark CPU across multiple grid sizes

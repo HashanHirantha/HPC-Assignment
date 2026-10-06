@@ -35,9 +35,9 @@
             <span class="engine-dot cpu-dot"></span>
             <span>CPU</span>
           </button>
-          <button id="hdr-btn-cuda" class="hdr-engine-btn" title="Switch to Massively Parallel NVIDIA CUDA (GPU)">
+          <button id="hdr-btn-cuda" class="hdr-engine-btn" title="Switch to Massively Parallel NVIDIA CUDA Architecture">
             <span class="engine-dot cuda-dot"></span>
-            <span>CUDA</span>
+            <span>NVIDIA CUDA</span>
           </button>
         </div>
         <button id="btn-toggle-benchmark" class="btn btn-secondary" title="View CPU vs CUDA Benchmark Report">
@@ -132,19 +132,23 @@
               </svg>
               <span>CPU (2D Serial)</span>
             </button>
-            <button id="btn-engine-cuda" class="engine-btn" data-engine="cuda" title="Massively Parallel NVIDIA CUDA GPU Kernel">
+            <button id="btn-engine-cuda" class="engine-btn" data-engine="cuda" title="Massively Parallel NVIDIA CUDA Architecture (Shared-Memory Tiling)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
-              <span>CUDA (GPU)</span>
+              <span>NVIDIA CUDA</span>
             </button>
           </div>
 
           <!-- Dynamic Engine Specs Card -->
           <div class="engine-telemetry-box" id="engine-telemetry-box">
             <div class="telemetry-row">
+              <span class="telemetry-label">Active Device</span>
+              <span class="telemetry-value mono text-cyan" id="spec-device">Host CPU Core</span>
+            </div>
+            <div class="telemetry-row">
               <span class="telemetry-label">Kernel/Method</span>
-              <span class="telemetry-value mono" id="spec-arch">Row-Major 2D (Single-Core)</span>
+              <span class="telemetry-value mono" id="spec-arch">Row-Major 2D (game_of_life_cpu.c)</span>
             </div>
             <div class="telemetry-row">
               <span class="telemetry-label">Hardware Dispatch</span>

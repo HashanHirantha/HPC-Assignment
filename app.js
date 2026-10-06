@@ -102,11 +102,28 @@
   const btnEngineCpu = document.getElementById('btn-engine-cpu');
   const btnEngineCuda = document.getElementById('btn-engine-cuda');
   const badgeEngineStatus = document.getElementById('badge-engine-status');
+  const specDevice = document.getElementById('spec-device');
   const specArch = document.getElementById('spec-arch');
   const specDispatch = document.getElementById('spec-dispatch');
   const specLatency = document.getElementById('spec-latency');
   const specSpeedup = document.getElementById('spec-speedup');
   const engineToast = document.getElementById('engine-toast');
+
+  /* Physical GPU Hardware Detection */
+  let detectedGpuName = 'Intel(R) Iris(R) Xe Graphics';
+  try {
+    const glProbe = document.createElement('canvas').getContext('webgl');
+    if (glProbe) {
+      const dbg = glProbe.getExtension('WEBGL_debug_renderer_info');
+      if (dbg) {
+        const full = glProbe.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
+        const match = full.match(/Intel\(R\)\s*Iris\(R\)\s*Xe\s*Graphics/i) || full.match(/NVIDIA[^\(\,]+/i) || full.match(/AMD[^\(\,]+/i) || full.match(/Radeon[^\(\,]+/i);
+        detectedGpuName = match ? match[0] : (full.split('(')[1]?.split(')')[0] || full);
+      }
+    }
+  } catch (e) {
+    detectedGpuName = 'Intel(R) Iris(R) Xe Graphics';
+  }
 
   /* Execution Controls */
   const btnPlayPause = document.getElementById('btn-play-pause');
@@ -214,14 +231,14 @@
 
     // Update Sidebar badge
     if (badgeEngineStatus) {
-      badgeEngineStatus.textContent = isCuda ? 'CUDA Parallel' : 'CPU Serial';
+      badgeEngineStatus.textContent = isCuda ? 'NVIDIA CUDA' : 'CPU Serial';
       badgeEngineStatus.className = 'engine-indicator-badge ' + (isCuda ? 'cuda' : 'cpu');
     }
 
     // Update HUD Metrics
     if (valEngine && valEngineSub) {
-      valEngine.textContent = isCuda ? 'CUDA' : 'CPU';
-      valEngineSub.textContent = isCuda ? '(Parallel GPU)' : '(2D Serial)';
+      valEngine.textContent = isCuda ? 'NVIDIA CUDA' : 'CPU';
+      valEngineSub.textContent = isCuda ? '(SM Parallel)' : '(2D Serial)';
       valEngine.className = isCuda ? 'stat-value text-emerald' : 'stat-value text-cyan';
     }
 
@@ -231,9 +248,9 @@
       const totalCells = (N * N).toLocaleString();
       if (isCuda) {
         const blocks = Math.ceil(N / 16);
-        showToast(`⚡ <strong>CUDA GPU Mode Activated:</strong> ${blocks}×${blocks} blocks (16×16 threads, ${totalCells} parallel cores)`, true);
+        showToast(`⚡ <strong>NVIDIA CUDA GPU Mode:</strong> ${blocks}×${blocks} blocks (16×16 threads, 32 th/warp, ${totalCells} parallel threads)`, true);
       } else {
-        showToast(`💻 <strong>CPU Mode Activated:</strong> Sequential 2D pointer traversal (single host thread)`, false);
+        showToast(`💻 <strong>CPU Mode:</strong> Sequential 2D pointer traversal (Host CPU single thread)`, false);
       }
     }
   }
@@ -250,8 +267,12 @@
 
     if (isCuda) {
       const blocksPerDim = Math.ceil(N / 16);
-      if (specArch) specArch.textContent = 'Shared-Memory 18×18 Halo Tile';
-      if (specDispatch) specDispatch.textContent = `${blocksPerDim}×${blocksPerDim} Blocks • ${totalCells} Threads`;
+      if (specDevice) {
+        specDevice.textContent = 'NVIDIA GPU (CUDA SM Cores)';
+        specDevice.className = 'telemetry-value mono text-emerald';
+      }
+      if (specArch) specArch.textContent = 'game_of_life_cuda.cu (18×18 Shared Tile)';
+      if (specDispatch) specDispatch.textContent = `${blocksPerDim}×${blocksPerDim} Blocks • 256 Th/Blk (${totalCells} Threads)`;
 
       const displayLatency = lastCudaComputeMs > 0 ? lastCudaComputeMs : (bench.cudaTotal * 10);
       if (specLatency) {
@@ -262,7 +283,7 @@
       if (specSpeedup) {
         const factor = bench.speedup;
         if (factor >= 1.0) {
-          specSpeedup.innerHTML = `<span class="text-emerald"><strong>${factor.toFixed(2)}×</strong> faster</span>`;
+          specSpeedup.innerHTML = `<span class="text-emerald"><strong>${factor.toFixed(2)}×</strong> faster (NVIDIA CUDA)</span>`;
         } else {
           specSpeedup.innerHTML = `<span class="text-muted">${factor.toFixed(2)}× (CPU launch edge)</span>`;
         }
@@ -273,7 +294,11 @@
         valComputeTime.className = 'stat-value text-emerald';
       }
     } else {
-      if (specArch) specArch.textContent = 'Row-Major 2D (game_of_life_cpu.c)';
+      if (specDevice) {
+        specDevice.textContent = 'Host CPU (x86_64 Core)';
+        specDevice.className = 'telemetry-value mono text-cyan';
+      }
+      if (specArch) specArch.textContent = 'game_of_life_cpu.c (2D Row-Major)';
       if (specDispatch) specDispatch.textContent = '1 Host Core (O(N²) Serial Scan)';
 
       const displayLatency = lastCpuComputeMs > 0 ? lastCpuComputeMs : (bench.cpuTotal * 10);
