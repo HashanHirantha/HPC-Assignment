@@ -1082,4 +1082,212 @@ kbd {
   color: #fff;
 }
 
+/* ── Locked / Hardware Guard Styles ────────────────────────────────────── */
+.hdr-engine-btn.hdr-btn-locked {
+  color: #fbbf24;
+  opacity: 0.9;
+  cursor: pointer;
+  border: 1px dashed rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.07);
+}
+
+.hdr-engine-btn.hdr-btn-locked:hover {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.7);
+  color: #fff;
+}
+
+.locked-engine-btn {
+  border: 1px dashed rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.05);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.locked-engine-btn:hover {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.7);
+}
+
+.locked-icon-badge {
+  color: #fbbf24;
+}
+
+.btn-sub-lock {
+  font-size: 0.65rem;
+  color: #fbbf24;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.btn-sub-state {
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.text-red {
+  color: #f87171 !important;
+}
+
+/* Hardware guard notice box */
+.engine-notice-box.hardware-guard-active {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #d1d5db;
+}
+
+.engine-notice-box.hardware-guard-active svg {
+  color: #fbbf24;
+}
+
+/* ── Hardware Guard Modal Styling ──────────────────────────────────────── */
+.modal-guard-dialog {
+  max-width: 680px;
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(245, 158, 11, 0.15);
+}
+
+.guard-header-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.guard-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.guard-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.guard-status-banner {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.status-badge-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
+.status-badge-tag.tag-error {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.guard-status-col h3 {
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+  color: #fff;
+}
+
+.guard-status-col p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.guard-reasons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.guard-reason-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guard-reason-card .card-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.guard-reason-card .card-icon.red {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.guard-reason-card .card-icon.green {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.guard-reason-card h4 {
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.guard-reason-card p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.guard-actions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.guard-actions-section h3 {
+  font-size: 0.92rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.guard-action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-colab-launch {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  color: #000;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+}
+
+.btn-colab-launch:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+  color: #000;
+}
+
 

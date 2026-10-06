@@ -52,6 +52,7 @@ run_cpu: cpu
 	./game_of_life_cpu $(GRID_SIZE) $(ITERATIONS)
 
 run_cuda: cuda
+	@echo "Checking for physical NVIDIA GPU hardware..."
 	./game_of_life_cuda $(GRID_SIZE) $(ITERATIONS)
 
 run_terminal:

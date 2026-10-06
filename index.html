@@ -33,11 +33,14 @@
         <div class="header-engine-switch" role="group" aria-label="Compute Engine Mode">
           <button id="hdr-btn-cpu" class="hdr-engine-btn active" title="Run locally on Host CPU">
             <span class="engine-dot cpu-dot"></span>
-            <span>CPU (Live)</span>
+            <span>CPU (Live Local)</span>
           </button>
-          <button id="hdr-btn-cuda" class="hdr-engine-btn" title="Simulate NVIDIA CUDA 16x16 Tiling Algorithm & Benchmark Profile">
-            <span class="engine-dot cuda-dot"></span>
-            <span>CUDA (Emulated)</span>
+          <button id="hdr-btn-cuda" class="hdr-engine-btn hdr-btn-locked" title="CUDA execution strictly requires an NVIDIA GPU. Locked on non-NVIDIA GPUs (Intel Iris Xe). Click for details.">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span id="hdr-cuda-text">CUDA (NVIDIA Only)</span>
           </button>
         </div>
         <button id="btn-open-colab" class="btn btn-colab" title="How to run game_of_life_cuda.cu on a real physical NVIDIA GPU via Google Colab">
@@ -137,12 +140,17 @@
                 <line x1="1" y1="15" x2="4" y2="15"/>
               </svg>
               <span>CPU (Live Local)</span>
+              <span class="btn-sub-state text-cyan">● Active</span>
             </button>
-            <button id="btn-engine-cuda" class="engine-btn" data-engine="cuda" title="Emulates 16x16 CUDA Thread Block Tiling and Assignment Benchmarks">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-              </svg>
-              <span>CUDA (Emulated)</span>
+            <button id="btn-engine-cuda" class="engine-btn locked-engine-btn" data-engine="cuda" title="CUDA execution strictly requires an NVIDIA GPU. Locked on non-NVIDIA GPUs (Intel Iris Xe). Click for details.">
+              <div class="locked-icon-badge">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
+              <span id="btn-cuda-label">CUDA (NVIDIA Only)</span>
+              <span class="btn-sub-lock">🔒 NVIDIA GPU Req.</span>
             </button>
           </div>
 
@@ -150,34 +158,38 @@
           <div class="engine-telemetry-box" id="engine-telemetry-box">
             <div class="telemetry-row">
               <span class="telemetry-label">Active Device</span>
-              <span class="telemetry-value mono text-cyan" id="spec-device">Host CPU Core (Live)</span>
+              <span class="telemetry-value mono text-cyan" id="spec-device">Host CPU Core (Live Local)</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">Detected GPU</span>
+              <span class="telemetry-value mono text-amber" id="spec-detected-gpu">Intel(R) Iris(R) Xe</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">CUDA Support</span>
+              <span class="telemetry-value mono text-red" id="spec-cuda-status">🔒 Blocked (Non-NVIDIA)</span>
             </div>
             <div class="telemetry-row">
               <span class="telemetry-label">Kernel/Method</span>
               <span class="telemetry-value mono" id="spec-arch">Row-Major 2D (game_of_life_cpu.c)</span>
             </div>
             <div class="telemetry-row">
-              <span class="telemetry-label">Hardware Dispatch</span>
-              <span class="telemetry-value mono" id="spec-dispatch">1 Host Thread</span>
-            </div>
-            <div class="telemetry-row">
               <span class="telemetry-label">Kernel Latency</span>
               <span class="telemetry-value mono text-accent" id="spec-latency">0.00 ms</span>
             </div>
             <div class="telemetry-row">
-              <span class="telemetry-label">Relative Speedup</span>
+              <span class="telemetry-label">Speedup Factor</span>
               <span class="telemetry-value mono" id="spec-speedup">1.00× (Baseline)</span>
             </div>
           </div>
 
-          <!-- Hardware Transparency Note Box -->
-          <div class="engine-notice-box" id="engine-notice-box">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
+          <!-- Hardware Guard Warning Notice Box -->
+          <div class="engine-notice-box hardware-guard-active" id="engine-notice-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
-            <span id="engine-notice-text"><strong>Hardware Transparency:</strong> Running on local CPU. Real native CUDA execution requires an NVIDIA GPU (run in Google Colab).</span>
+            <span id="engine-notice-text"><strong>Hardware Guard:</strong> CUDA ONLY runs on a physical NVIDIA GPU. Non-NVIDIA execution (Intel Iris Xe) is strictly locked. Live simulation runs on CPU. Use Colab for NVIDIA CUDA.</span>
           </div>
         </div>
 
@@ -467,6 +479,68 @@
               <li><strong>Massive Parallelism:</strong> Beyond 512×512, CUDA launches tens of thousands of simultaneous GPU threads. Each thread computes one cell update in coalesced 32-bit registers.</li>
               <li><strong>Shared Memory Tiling:</strong> Ghost cells and neighbor stencils are loaded into fast L1 shared memory tiles, avoiding repeated global VRAM transactions.</li>
             </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hardware Guard Modal: NVIDIA GPU Required -->
+  <div id="modal-hardware-guard" class="modal-backdrop" style="display:none;">
+    <div class="modal-dialog modal-guard-dialog">
+      <div class="modal-header">
+        <div class="guard-header-title">
+          <div class="guard-icon-circle">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="modal-title">CUDA Execution Blocked: NVIDIA GPU Required</h2>
+            <p class="modal-subtitle">CUDA ONLY runs on physical NVIDIA hardware — Non-NVIDIA GPUs cannot execute CUDA</p>
+          </div>
+        </div>
+        <button id="btn-close-guard" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body guard-body">
+        <div class="guard-status-banner">
+          <div class="guard-status-col">
+            <span class="status-badge-tag tag-error">HARDWARE INCOMPATIBLE</span>
+            <h3>Detected GPU: <span id="guard-detected-gpu-name" class="mono text-amber">Intel(R) Iris(R) Xe Graphics</span></h3>
+            <p>Your machine is equipped with an <strong>Intel Iris Xe</strong> graphics chip. CUDA (Compute Unified Device Architecture) is proprietary NVIDIA technology and <strong>physically cannot execute on Intel, AMD, or other non-NVIDIA GPUs</strong>. Emulation on non-NVIDIA hardware is strictly disabled.</p>
+          </div>
+        </div>
+
+        <div class="guard-reasons-grid">
+          <div class="guard-reason-card">
+            <div class="card-icon red">✕</div>
+            <h4>Why CUDA Cannot Run on Intel Iris Xe</h4>
+            <p>CUDA requires physical <strong>NVIDIA Streaming Multiprocessors (SMs)</strong>, CUDA cores, Warp hardware schedulers, and NVIDIA driver runtime. Intel GPUs only support Intel oneAPI, DirectX, Vulkan, or OpenCL — not CUDA.</p>
+          </div>
+          <div class="guard-reason-card">
+            <div class="card-icon green">✓</div>
+            <h4>Where CUDA Does Run</h4>
+            <p>The CUDA implementation (<code>game_of_life_cuda.cu</code>) runs on any machine with an <strong>NVIDIA GPU</strong> (GeForce RTX/GTX, Tesla, Quadro), or for free on <strong>Google Colab</strong> (NVIDIA Tesla T4 GPU).</p>
+          </div>
+        </div>
+
+        <div class="guard-actions-section">
+          <h3>How to Proceed for Your HPC Assignment:</h3>
+          <div class="guard-action-buttons">
+            <a href="https://colab.research.google.com" target="_blank" id="btn-guard-colab" class="btn btn-primary btn-colab-launch">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              <span>Launch on Google Colab (Free NVIDIA Tesla T4 GPU)</span>
+            </a>
+            <button id="btn-guard-use-cpu" class="btn btn-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                <rect x="9" y="9" width="6" height="6"/>
+              </svg>
+              <span>Continue Live Simulation with CPU Engine</span>
+            </button>
           </div>
         </div>
       </div>

@@ -180,6 +180,28 @@ long count_alive(int *grid, int N) {
     return count;
 }
 
+/* ── Verify Physical NVIDIA GPU Hardware ────────────────────────────────── */
+
+int verify_nvidia_device(void) {
+    int device_count = 0;
+    cudaError_t err = cudaGetDeviceCount(&device_count);
+    if (err != cudaSuccess || device_count == 0) {
+        fprintf(stderr, "\n============================================================\n");
+        fprintf(stderr, "  [CRITICAL HARDWARE ERROR] NO NVIDIA GPU DETECTED!\n");
+        fprintf(stderr, "============================================================\n");
+        fprintf(stderr, "  This CUDA code ONLY runs on physical NVIDIA GPUs.\n");
+        fprintf(stderr, "  It CANNOT run on Intel Iris Xe Graphics, AMD GPUs, or CPUs.\n\n");
+        fprintf(stderr, "  RECOMMENDED ACTIONS:\n");
+        fprintf(stderr, "  1. Run on Google Colab with a free NVIDIA Tesla T4 GPU:\n");
+        fprintf(stderr, "     Refer to: RUN_CUDA_ON_COLAB.md\n");
+        fprintf(stderr, "  2. Run the CPU version locally on your laptop:\n");
+        fprintf(stderr, "     ./game_of_life_cpu\n");
+        fprintf(stderr, "============================================================\n\n");
+        return 0;
+    }
+    return 1;
+}
+
 /* ── Print GPU Device Info ─────────────────────────────────────────────── */
 
 void print_device_info(void) {
@@ -201,6 +223,11 @@ void print_device_info(void) {
 /* ── Main Program ──────────────────────────────────────────────────────── */
 
 int main(int argc, char *argv[]) {
+    /* ── Strict Hardware Verification: CUDA requires physical NVIDIA GPU ── */
+    if (!verify_nvidia_device()) {
+        return EXIT_FAILURE;
+    }
+
     /* ── Parse command-line arguments ── */
     int N              = (argc > 1) ? atoi(argv[1]) : 1024;
     int num_iterations = (argc > 2) ? atoi(argv[2]) : 100;

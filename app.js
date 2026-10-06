@@ -112,20 +112,66 @@
   const engineNoticeText = document.getElementById('engine-notice-text');
   const engineToast = document.getElementById('engine-toast');
 
-  /* Physical GPU Hardware Detection */
-  let detectedGpuName = 'Intel(R) Iris(R) Xe Graphics';
-  try {
-    const glProbe = document.createElement('canvas').getContext('webgl');
-    if (glProbe) {
-      const dbg = glProbe.getExtension('WEBGL_debug_renderer_info');
-      if (dbg) {
-        const full = glProbe.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
-        const match = full.match(/Intel\(R\)\s*Iris\(R\)\s*Xe\s*Graphics/i) || full.match(/NVIDIA[^\(\,]+/i) || full.match(/AMD[^\(\,]+/i) || full.match(/Radeon[^\(\,]+/i);
-        detectedGpuName = match ? match[0] : (full.split('(')[1]?.split(')')[0] || full);
+  /* ── Physical GPU Hardware Detection & Strict NVIDIA Check ──────────────── */
+  function detectHardware() {
+    let renderer = 'Intel(R) Iris(R) Xe Graphics';
+    let isNvidia = false;
+    try {
+      const glProbe = document.createElement('canvas').getContext('webgl');
+      if (glProbe) {
+        const dbg = glProbe.getExtension('WEBGL_debug_renderer_info');
+        if (dbg) {
+          const full = glProbe.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
+          if (full) {
+            renderer = full;
+          }
+        } else {
+          renderer = glProbe.getParameter(glProbe.RENDERER) || renderer;
+        }
       }
+    } catch (e) {
+      renderer = 'Intel(R) Iris(R) Xe Graphics';
     }
-  } catch (e) {
-    detectedGpuName = 'Intel(R) Iris(R) Xe Graphics';
+
+    let cleanName = renderer;
+    if (/Iris\(R\)\s*Xe/i.test(renderer)) {
+      cleanName = 'Intel(R) Iris(R) Xe Graphics';
+    } else if (/NVIDIA/i.test(renderer)) {
+      const match = renderer.match(/NVIDIA[^\(\,]+/i);
+      cleanName = match ? match[0].trim() : renderer;
+    } else if (/AMD|Radeon/i.test(renderer)) {
+      const match = renderer.match(/(AMD|Radeon)[^\(\,]+/i);
+      cleanName = match ? match[0].trim() : renderer;
+    }
+
+    // Strict NVIDIA Hardware verification: CUDA only runs on NVIDIA GPUs
+    isNvidia = /nvidia|geforce|rtx|gtx|tesla|quadro|titan/i.test(renderer);
+
+    return {
+      raw: renderer,
+      displayName: cleanName,
+      isNvidia: isNvidia
+    };
+  }
+
+  const hardware = detectHardware();
+
+  /* Hardware Guard Modal & DOM Elements */
+  const modalHardwareGuard = document.getElementById('modal-hardware-guard');
+  const btnCloseGuard = document.getElementById('btn-close-guard');
+  const btnGuardUseCpu = document.getElementById('btn-guard-use-cpu');
+  const btnGuardColab = document.getElementById('btn-guard-colab');
+  const guardDetectedGpuName = document.getElementById('guard-detected-gpu-name');
+  const specDetectedGpu = document.getElementById('spec-detected-gpu');
+  const specCudaStatus = document.getElementById('spec-cuda-status');
+
+  function showHardwareGuardModal() {
+    if (guardDetectedGpuName) {
+      guardDetectedGpuName.textContent = hardware.displayName;
+    }
+    if (modalHardwareGuard) {
+      modalHardwareGuard.style.display = 'flex';
+    }
   }
 
   /* Execution Controls */
@@ -212,66 +258,89 @@
     }, 2600);
   }
 
-  /* ── Engine Switcher (CPU vs CUDA) ─────────────────────────────────────── */
+  /* ── Engine Switcher (Strict Hardware Enforcement) ───────────────────────── */
+  function attemptSetEngine(engine, triggerToast = true) {
+    if (engine === 'cuda') {
+      if (!hardware.isNvidia) {
+        // STRICT PROHIBITION: CUDA CANNOT AND MUST NOT RUN ON NON-NVIDIA HARDWARE (like Intel Iris Xe)
+        showHardwareGuardModal();
+        showToast(`🔒 <strong>CUDA Blocked:</strong> Requires physical NVIDIA GPU (Detected: ${hardware.displayName})`, false);
+        return false;
+      }
+    }
+    setEngine(engine, triggerToast);
+    return true;
+  }
+
   function setEngine(engine, triggerToast = true) {
+    // If system is not physical NVIDIA GPU, force engine to CPU
+    if (!hardware.isNvidia) {
+      engine = 'cpu';
+    }
     currentEngine = engine;
     const isCuda = engine === 'cuda';
 
     // Update Header buttons
     if (hdrBtnCpu) hdrBtnCpu.classList.toggle('active', !isCuda);
-    if (hdrBtnCuda) hdrBtnCuda.classList.toggle('active', isCuda);
+    if (hdrBtnCuda) {
+      hdrBtnCuda.classList.toggle('active', isCuda);
+      if (!hardware.isNvidia) {
+        hdrBtnCuda.classList.add('hdr-btn-locked');
+      }
+    }
 
     // Update Sidebar buttons
     if (btnEngineCpu) btnEngineCpu.classList.toggle('active', !isCuda);
-    if (btnEngineCuda) btnEngineCuda.classList.toggle('active', isCuda);
+    if (btnEngineCuda) {
+      btnEngineCuda.classList.toggle('active', isCuda);
+      if (!hardware.isNvidia) {
+        btnEngineCuda.classList.add('locked-engine-btn');
+      }
+    }
 
     // Update Header badge
     if (headerEngineBadge) {
-      headerEngineBadge.textContent = isCuda ? 'CUDA Live Engine' : 'CPU Live Engine';
-      headerEngineBadge.style.borderColor = isCuda ? 'rgba(52, 211, 153, 0.5)' : 'rgba(56, 189, 248, 0.5)';
-      headerEngineBadge.style.color = isCuda ? '#34d399' : '#38bdf8';
+      if (!hardware.isNvidia) {
+        headerEngineBadge.textContent = 'CPU Live Engine • Intel Iris Xe';
+        headerEngineBadge.style.borderColor = 'rgba(56, 189, 248, 0.5)';
+        headerEngineBadge.style.color = '#38bdf8';
+      } else {
+        headerEngineBadge.textContent = isCuda ? 'CUDA GPU Engine' : 'CPU Live Engine';
+        headerEngineBadge.style.borderColor = isCuda ? 'rgba(52, 211, 153, 0.5)' : 'rgba(56, 189, 248, 0.5)';
+        headerEngineBadge.style.color = isCuda ? '#34d399' : '#38bdf8';
+      }
     }
 
     // Update Sidebar badge
     if (badgeEngineStatus) {
-      badgeEngineStatus.textContent = isCuda ? 'CUDA (Emulated)' : 'CPU Live (Local)';
-      badgeEngineStatus.className = 'engine-indicator-badge ' + (isCuda ? 'cuda' : 'cpu');
-    }
-
-    // Update Header badge
-    if (headerEngineBadge) {
-      headerEngineBadge.textContent = isCuda ? 'CUDA Emulation Profile' : 'CPU Live Engine';
-      headerEngineBadge.style.borderColor = isCuda ? 'rgba(245, 158, 11, 0.5)' : 'rgba(56, 189, 248, 0.5)';
-      headerEngineBadge.style.color = isCuda ? '#fbbf24' : '#38bdf8';
+      if (!hardware.isNvidia) {
+        badgeEngineStatus.textContent = 'CPU Mode (Live Local)';
+        badgeEngineStatus.className = 'engine-indicator-badge cpu';
+      } else {
+        badgeEngineStatus.textContent = isCuda ? 'CUDA GPU Mode' : 'CPU Live (Local)';
+        badgeEngineStatus.className = 'engine-indicator-badge ' + (isCuda ? 'cuda' : 'cpu');
+      }
     }
 
     // Update HUD Metrics
     if (valEngine && valEngineSub) {
-      valEngine.textContent = isCuda ? 'CUDA' : 'CPU';
-      valEngineSub.textContent = isCuda ? '(Emulated Model)' : '(Live Local)';
-      valEngine.className = isCuda ? 'stat-value text-amber' : 'stat-value text-cyan';
+      valEngine.textContent = 'CPU';
+      valEngineSub.textContent = '(Live Local)';
+      valEngine.className = 'stat-value text-cyan';
     }
 
     // Update notice box
     if (engineNoticeBox && engineNoticeText) {
-      engineNoticeBox.classList.toggle('cuda-mode', isCuda);
-      if (isCuda) {
-        engineNoticeText.innerHTML = '<strong>Hardware Transparency:</strong> Your laptop has an Intel GPU. CUDA requires physical NVIDIA hardware. This mode emulates CUDA 16×16 tiling on your CPU using benchmark data from an NVIDIA Tesla T4 GPU.';
-      } else {
-        engineNoticeText.innerHTML = '<strong>Hardware Transparency:</strong> Running live on your local machine CPU using standard 2D arrays.';
+      if (!hardware.isNvidia) {
+        engineNoticeBox.className = 'engine-notice-box hardware-guard-active';
+        engineNoticeText.innerHTML = `<strong>Hardware Guard Active:</strong> CUDA is NVIDIA-exclusive proprietary technology and <strong>only runs on an NVIDIA GPU</strong>. Your system has <strong>${hardware.displayName}</strong>, so CUDA execution is strictly disabled. Run live simulation on CPU, or run CUDA on Google Colab (Tesla T4).`;
       }
     }
 
     updateEngineSpecs();
 
     if (triggerToast) {
-      const totalCells = (N * N).toLocaleString();
-      if (isCuda) {
-        const blocks = Math.ceil(N / 16);
-        showToast(`⚡ <strong>CUDA Emulation Active:</strong> Emulating 16×16 block tiling logic & NVIDIA Tesla T4 speedup profile on local CPU`, true);
-      } else {
-        showToast(`💻 <strong>CPU Mode Active:</strong> Running live sequential 2D array simulation on host CPU`, false);
-      }
+      showToast(`💻 <strong>CPU Engine Active:</strong> Running live sequential 2D simulation on host CPU`, false);
     }
   }
 
@@ -282,59 +351,32 @@
       speedup: Math.max(1, (N * N) / 125000)
     };
 
-    const isCuda = currentEngine === 'cuda';
-    const totalCells = (N * N).toLocaleString();
+    if (specDevice) {
+      specDevice.textContent = 'Local Machine CPU (Live)';
+      specDevice.className = 'telemetry-value mono text-cyan';
+    }
+    if (specDetectedGpu) {
+      specDetectedGpu.textContent = hardware.displayName;
+    }
+    if (specCudaStatus) {
+      specCudaStatus.textContent = hardware.isNvidia ? '✅ NVIDIA Hardware' : '🔒 Blocked (Non-NVIDIA)';
+      specCudaStatus.className = 'telemetry-value mono ' + (hardware.isNvidia ? 'text-emerald' : 'text-red');
+    }
+    if (specArch) specArch.textContent = 'game_of_life_cpu.c (2D Row-Major)';
 
-    if (isCuda) {
-      const blocksPerDim = Math.ceil(N / 16);
-      if (specDevice) {
-        specDevice.textContent = 'Emulated on Host CPU (Tesla T4 Model)';
-        specDevice.className = 'telemetry-value mono text-amber';
-      }
-      if (specArch) specArch.textContent = '16×16 CUDA Tiling (Emulated)';
-      if (specDispatch) specDispatch.textContent = `Simulated ${blocksPerDim}×${blocksPerDim} Blocks (32 Th/Warp)`;
+    const displayLatency = lastCpuComputeMs > 0 ? lastCpuComputeMs : (bench.cpuTotal * 10);
+    if (specLatency) {
+      specLatency.textContent = `${displayLatency.toFixed(2)} ms / gen`;
+      specLatency.className = 'telemetry-value mono text-cyan';
+    }
 
-      const displayLatency = lastCudaComputeMs > 0 ? lastCudaComputeMs : (bench.cudaTotal * 10);
-      if (specLatency) {
-        specLatency.textContent = `${displayLatency.toFixed(2)} ms / gen`;
-        specLatency.className = 'telemetry-value mono text-amber';
-      }
+    if (specSpeedup) {
+      specSpeedup.innerHTML = '<span class="text-muted">1.00× (Baseline)</span>';
+    }
 
-      if (specSpeedup) {
-        const factor = bench.speedup;
-        if (factor >= 1.0) {
-          specSpeedup.innerHTML = `<span class="text-amber"><strong>${factor.toFixed(2)}×</strong> (NVIDIA Tesla T4 Benchmark)</span>`;
-        } else {
-          specSpeedup.innerHTML = `<span class="text-muted">${factor.toFixed(2)}× (CPU launch edge)</span>`;
-        }
-      }
-
-      if (valComputeTime) {
-        valComputeTime.innerHTML = `${displayLatency.toFixed(2)} <small>ms</small>`;
-        valComputeTime.className = 'stat-value text-amber';
-      }
-    } else {
-      if (specDevice) {
-        specDevice.textContent = 'Local Machine CPU (Live)';
-        specDevice.className = 'telemetry-value mono text-cyan';
-      }
-      if (specArch) specArch.textContent = 'game_of_life_cpu.c (2D Row-Major)';
-      if (specDispatch) specDispatch.textContent = '1 Host Core (O(N²) Serial Scan)';
-
-      const displayLatency = lastCpuComputeMs > 0 ? lastCpuComputeMs : (bench.cpuTotal * 10);
-      if (specLatency) {
-        specLatency.textContent = `${displayLatency.toFixed(2)} ms / gen`;
-        specLatency.className = 'telemetry-value mono text-cyan';
-      }
-
-      if (specSpeedup) {
-        specSpeedup.innerHTML = '<span class="text-muted">1.00× (Baseline)</span>';
-      }
-
-      if (valComputeTime) {
-        valComputeTime.innerHTML = `${displayLatency.toFixed(2)} <small>ms</small>`;
-        valComputeTime.className = 'stat-value text-cyan';
-      }
+    if (valComputeTime) {
+      valComputeTime.innerHTML = `${displayLatency.toFixed(2)} <small>ms</small>`;
+      valComputeTime.className = 'stat-value text-cyan';
     }
   }
 
@@ -478,6 +520,11 @@
    * Delivers massively higher throughput and realistic GPU performance metrics.
    */
   function stepCudaSimulation() {
+    if (!hardware.isNvidia) {
+      // CUDA is strictly forbidden on non-NVIDIA hardware; fallback to CPU
+      stepCpuSimulation();
+      return;
+    }
     const t0 = performance.now();
     let newAlive = 0;
     const isToroidal = toroidal;
@@ -560,10 +607,12 @@
 
   /* ── Master Step Simulation Dispatcher ─────────────────────────────────── */
   function stepSimulation() {
-    if (currentEngine === 'cuda') {
-      stepCudaSimulation();
-    } else {
+    // STRICT RULE: CUDA only runs on NVIDIA GPU.
+    // If not physical NVIDIA GPU, strictly enforce local CPU simulation only.
+    if (!hardware.isNvidia || currentEngine !== 'cuda') {
       stepCpuSimulation();
+    } else {
+      stepCudaSimulation();
     }
   }
 
@@ -799,9 +848,9 @@
 
   /* Engine Switchers (Header & Sidebar) */
   if (hdrBtnCpu) hdrBtnCpu.addEventListener('click', () => setEngine('cpu'));
-  if (hdrBtnCuda) hdrBtnCuda.addEventListener('click', () => setEngine('cuda'));
+  if (hdrBtnCuda) hdrBtnCuda.addEventListener('click', () => attemptSetEngine('cuda'));
   if (btnEngineCpu) btnEngineCpu.addEventListener('click', () => setEngine('cpu'));
-  if (btnEngineCuda) btnEngineCuda.addEventListener('click', () => setEngine('cuda'));
+  if (btnEngineCuda) btnEngineCuda.addEventListener('click', () => attemptSetEngine('cuda'));
   if (btnOpenColab) {
     btnOpenColab.addEventListener('click', () => {
       window.open('https://colab.research.google.com', '_blank');
@@ -1002,7 +1051,12 @@
         }
         break;
       case 'KeyM':
-        setEngine(currentEngine === 'cpu' ? 'cuda' : 'cpu');
+        if (!hardware.isNvidia) {
+          showHardwareGuardModal();
+          showToast(`🔒 CUDA locked: Physical NVIDIA GPU required (${hardware.displayName})`, false);
+        } else {
+          setEngine(currentEngine === 'cpu' ? 'cuda' : 'cpu');
+        }
         break;
       case 'KeyR':
         randomizeGrid(30);
@@ -1036,6 +1090,25 @@
       modalBenchmark.style.display = 'none';
     }
   });
+
+  /* ── Hardware Guard Modal ──────────────────────────────────────────────── */
+  if (btnCloseGuard) {
+    btnCloseGuard.addEventListener('click', () => {
+      if (modalHardwareGuard) modalHardwareGuard.style.display = 'none';
+    });
+  }
+  if (btnGuardUseCpu) {
+    btnGuardUseCpu.addEventListener('click', () => {
+      if (modalHardwareGuard) modalHardwareGuard.style.display = 'none';
+    });
+  }
+  if (modalHardwareGuard) {
+    modalHardwareGuard.addEventListener('click', (e) => {
+      if (e.target === modalHardwareGuard) {
+        modalHardwareGuard.style.display = 'none';
+      }
+    });
+  }
 
   /* ── Launch Application ────────────────────────────────────────────────── */
   initGrid(1024);
