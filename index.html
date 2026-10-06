@@ -24,11 +24,22 @@
           </svg>
         </div>
         <div>
-          <h1 class="header-title">Conway's Game of Life <span class="badge-hpc">HPC Live Engine</span></h1>
+          <h1 class="header-title">Conway's Game of Life <span class="badge-hpc" id="header-engine-badge">CPU Live Engine</span></h1>
           <p class="header-subtitle">Real-Time Cellular Automata • 2D CPU vs CUDA Benchmark Companion</p>
         </div>
       </div>
       <div class="header-actions">
+        <!-- Quick Engine Selector in Header -->
+        <div class="header-engine-switch" role="group" aria-label="Compute Engine Mode">
+          <button id="hdr-btn-cpu" class="hdr-engine-btn active" title="Switch to Sequential CPU (2D Arrays)">
+            <span class="engine-dot cpu-dot"></span>
+            <span>CPU</span>
+          </button>
+          <button id="hdr-btn-cuda" class="hdr-engine-btn" title="Switch to Massively Parallel NVIDIA CUDA (GPU)">
+            <span class="engine-dot cuda-dot"></span>
+            <span>CUDA</span>
+          </button>
+        </div>
         <button id="btn-toggle-benchmark" class="btn btn-secondary" title="View CPU vs CUDA Benchmark Report">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="20" x2="18" y2="10" />
@@ -54,6 +65,13 @@
 
     <!-- Real-Time Metrics HUD -->
     <section class="telemetry-bar" aria-label="Simulation Telemetry">
+      <div class="stat-card stat-card-engine" id="card-engine-hud">
+        <span class="stat-label">Compute Mode</span>
+        <div class="stat-group">
+          <span class="stat-value text-accent" id="val-engine">CPU</span>
+          <span class="stat-sub" id="val-engine-sub">(2D Serial)</span>
+        </div>
+      </div>
       <div class="stat-card">
         <span class="stat-label">Generation</span>
         <span class="stat-value" id="val-generation">0</span>
@@ -74,6 +92,10 @@
         <span class="stat-value" id="val-throughput">0.00 <small>M cells/s</small></span>
       </div>
       <div class="stat-card">
+        <span class="stat-label">Compute Latency</span>
+        <span class="stat-value" id="val-compute-time">0.00 <small>ms</small></span>
+      </div>
+      <div class="stat-card">
         <span class="stat-label">Grid Dimensions</span>
         <span class="stat-value" id="val-grid-size">1024 × 1024</span>
       </div>
@@ -87,6 +109,58 @@
     <main class="simulation-workspace">
       <!-- Left Controls Panel -->
       <aside class="control-panel">
+        <!-- Primary HPC Compute Engine Selector -->
+        <div class="panel-section engine-selector-section">
+          <div class="section-title-row">
+            <h2 class="section-title">Compute Engine (HPC)</h2>
+            <span id="badge-engine-status" class="engine-indicator-badge cpu">CPU Mode</span>
+          </div>
+
+          <div class="engine-switch-card">
+            <button id="btn-engine-cpu" class="engine-btn active" data-engine="cpu" title="Sequential C-style 2D Array Traversal">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                <rect x="9" y="9" width="6" height="6"/>
+                <line x1="9" y1="1" x2="9" y2="4"/>
+                <line x1="15" y1="1" x2="15" y2="4"/>
+                <line x1="9" y1="20" x2="9" y2="23"/>
+                <line x1="15" y1="20" x2="15" y2="23"/>
+                <line x1="20" y1="9" x2="23" y2="9"/>
+                <line x1="20" y1="15" x2="23" y2="15"/>
+                <line x1="1" y1="9" x2="4" y2="9"/>
+                <line x1="1" y1="15" x2="4" y2="15"/>
+              </svg>
+              <span>CPU (2D Serial)</span>
+            </button>
+            <button id="btn-engine-cuda" class="engine-btn" data-engine="cuda" title="Massively Parallel NVIDIA CUDA GPU Kernel">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              <span>CUDA (GPU)</span>
+            </button>
+          </div>
+
+          <!-- Dynamic Engine Specs Card -->
+          <div class="engine-telemetry-box" id="engine-telemetry-box">
+            <div class="telemetry-row">
+              <span class="telemetry-label">Kernel/Method</span>
+              <span class="telemetry-value mono" id="spec-arch">Row-Major 2D (Single-Core)</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">Hardware Dispatch</span>
+              <span class="telemetry-value mono" id="spec-dispatch">1 Host Thread</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">Kernel Latency</span>
+              <span class="telemetry-value mono text-accent" id="spec-latency">0.00 ms</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">Relative Speedup</span>
+              <span class="telemetry-value mono" id="spec-speedup">1.00× (Baseline)</span>
+            </div>
+          </div>
+        </div>
+
         <div class="panel-section">
           <h2 class="section-title">Execution Controls</h2>
           <div class="playback-controls">
@@ -208,6 +282,7 @@
           <ul class="shortcuts-list">
             <li><kbd>Space</kbd> Play / Pause</li>
             <li><kbd>S</kbd> Single Step</li>
+            <li><kbd>M</kbd> Toggle CPU / CUDA</li>
             <li><kbd>R</kbd> Randomize 30%</li>
             <li><kbd>C</kbd> Clear Grid</li>
             <li><kbd>Scroll</kbd> Zoom In / Out</li>
@@ -377,6 +452,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Real-time Engine Mode Transition Toast -->
+  <div id="engine-toast" class="engine-toast" style="display:none;"></div>
 
   <script src="app.js"></script>
 </body>

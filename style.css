@@ -811,3 +811,232 @@ kbd {
   font-size: 0.84rem;
   color: var(--text-muted);
 }
+
+/* ── HPC Engine Switcher (Header & Sidebar) ────────────────────────────── */
+.header-engine-switch {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  gap: 3px;
+}
+
+.hdr-engine-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hdr-engine-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.hdr-engine-btn.active {
+  color: #fff;
+  background: var(--bg-card);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hdr-engine-btn.active[id*="cuda"] {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+.hdr-engine-btn.active[id*="cpu"] {
+  background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.35);
+}
+
+.engine-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.cpu-dot {
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+.cuda-dot {
+  background: #34d399;
+  box-shadow: 0 0 6px #34d399;
+}
+
+/* ── Sidebar Engine Selector ───────────────────────────────────────────── */
+.engine-selector-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.engine-indicator-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  transition: all 0.25s ease;
+}
+
+.engine-indicator-badge.cpu {
+  background: rgba(6, 182, 212, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.engine-indicator-badge.cuda {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+.engine-switch-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.engine-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.engine-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-main);
+  border-color: var(--border-active);
+}
+
+.engine-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.engine-btn:hover svg {
+  transform: translateY(-2px);
+}
+
+.engine-btn.active[data-engine="cpu"] {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.25) 0%, rgba(6, 182, 212, 0.15) 100%);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.2);
+}
+
+.engine-btn.active[data-engine="cuda"] {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.25) 0%, rgba(16, 185, 129, 0.18) 100%);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.5);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+}
+
+/* ── Dynamic Engine Telemetry Box ───────────────────────────────────────── */
+.engine-telemetry-box {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.telemetry-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.73rem;
+}
+
+.telemetry-label {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.telemetry-value {
+  color: var(--text-main);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* ── HUD Engine Card Highlight ─────────────────────────────────────────── */
+.stat-card-engine {
+  border-left: 3px solid var(--accent-primary);
+}
+
+/* ── Toast Notification for Engine Switch ──────────────────────────────── */
+.engine-toast {
+  position: fixed;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(13, 19, 34, 0.95);
+  backdrop-filter: blur(16px);
+  color: #fff;
+  border: 1px solid var(--border-active);
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideToastDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+@keyframes slideToastDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
