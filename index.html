@@ -31,15 +31,21 @@
       <div class="header-actions">
         <!-- Quick Engine Selector in Header -->
         <div class="header-engine-switch" role="group" aria-label="Compute Engine Mode">
-          <button id="hdr-btn-cpu" class="hdr-engine-btn active" title="Switch to Sequential CPU (2D Arrays)">
+          <button id="hdr-btn-cpu" class="hdr-engine-btn active" title="Run locally on Host CPU">
             <span class="engine-dot cpu-dot"></span>
-            <span>CPU</span>
+            <span>CPU (Live)</span>
           </button>
-          <button id="hdr-btn-cuda" class="hdr-engine-btn" title="Switch to Massively Parallel NVIDIA CUDA Architecture">
+          <button id="hdr-btn-cuda" class="hdr-engine-btn" title="Simulate NVIDIA CUDA 16x16 Tiling Algorithm & Benchmark Profile">
             <span class="engine-dot cuda-dot"></span>
-            <span>NVIDIA CUDA</span>
+            <span>CUDA (Emulated)</span>
           </button>
         </div>
+        <button id="btn-open-colab" class="btn btn-colab" title="How to run game_of_life_cuda.cu on a real physical NVIDIA GPU via Google Colab">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Colab NVIDIA GPU
+        </button>
         <button id="btn-toggle-benchmark" class="btn btn-secondary" title="View CPU vs CUDA Benchmark Report">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="20" x2="18" y2="10" />
@@ -117,7 +123,7 @@
           </div>
 
           <div class="engine-switch-card">
-            <button id="btn-engine-cpu" class="engine-btn active" data-engine="cpu" title="Sequential C-style 2D Array Traversal">
+            <button id="btn-engine-cpu" class="engine-btn active" data-engine="cpu" title="Runs live on your machine's CPU">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="4" y="4" width="16" height="16" rx="2"/>
                 <rect x="9" y="9" width="6" height="6"/>
@@ -130,13 +136,13 @@
                 <line x1="1" y1="9" x2="4" y2="9"/>
                 <line x1="1" y1="15" x2="4" y2="15"/>
               </svg>
-              <span>CPU (2D Serial)</span>
+              <span>CPU (Live Local)</span>
             </button>
-            <button id="btn-engine-cuda" class="engine-btn" data-engine="cuda" title="Massively Parallel NVIDIA CUDA Architecture (Shared-Memory Tiling)">
+            <button id="btn-engine-cuda" class="engine-btn" data-engine="cuda" title="Emulates 16x16 CUDA Thread Block Tiling and Assignment Benchmarks">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
-              <span>NVIDIA CUDA</span>
+              <span>CUDA (Emulated)</span>
             </button>
           </div>
 
@@ -144,7 +150,7 @@
           <div class="engine-telemetry-box" id="engine-telemetry-box">
             <div class="telemetry-row">
               <span class="telemetry-label">Active Device</span>
-              <span class="telemetry-value mono text-cyan" id="spec-device">Host CPU Core</span>
+              <span class="telemetry-value mono text-cyan" id="spec-device">Host CPU Core (Live)</span>
             </div>
             <div class="telemetry-row">
               <span class="telemetry-label">Kernel/Method</span>
@@ -162,6 +168,16 @@
               <span class="telemetry-label">Relative Speedup</span>
               <span class="telemetry-value mono" id="spec-speedup">1.00× (Baseline)</span>
             </div>
+          </div>
+
+          <!-- Hardware Transparency Note Box -->
+          <div class="engine-notice-box" id="engine-notice-box">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span id="engine-notice-text"><strong>Hardware Transparency:</strong> Running on local CPU. Real native CUDA execution requires an NVIDIA GPU (run in Google Colab).</span>
           </div>
         </div>
 

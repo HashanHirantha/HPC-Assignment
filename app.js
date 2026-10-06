@@ -82,6 +82,7 @@
   const hdrBtnCpu = document.getElementById('hdr-btn-cpu');
   const hdrBtnCuda = document.getElementById('hdr-btn-cuda');
   const headerEngineBadge = document.getElementById('header-engine-badge');
+  const btnOpenColab = document.getElementById('btn-open-colab');
   const btnToggleBenchmark = document.getElementById('btn-toggle-benchmark');
   const btnResetView = document.getElementById('btn-reset-view');
   const btnFullscreen = document.getElementById('btn-fullscreen');
@@ -107,6 +108,8 @@
   const specDispatch = document.getElementById('spec-dispatch');
   const specLatency = document.getElementById('spec-latency');
   const specSpeedup = document.getElementById('spec-speedup');
+  const engineNoticeBox = document.getElementById('engine-notice-box');
+  const engineNoticeText = document.getElementById('engine-notice-text');
   const engineToast = document.getElementById('engine-toast');
 
   /* Physical GPU Hardware Detection */
@@ -231,15 +234,32 @@
 
     // Update Sidebar badge
     if (badgeEngineStatus) {
-      badgeEngineStatus.textContent = isCuda ? 'NVIDIA CUDA' : 'CPU Serial';
+      badgeEngineStatus.textContent = isCuda ? 'CUDA (Emulated)' : 'CPU Live (Local)';
       badgeEngineStatus.className = 'engine-indicator-badge ' + (isCuda ? 'cuda' : 'cpu');
+    }
+
+    // Update Header badge
+    if (headerEngineBadge) {
+      headerEngineBadge.textContent = isCuda ? 'CUDA Emulation Profile' : 'CPU Live Engine';
+      headerEngineBadge.style.borderColor = isCuda ? 'rgba(245, 158, 11, 0.5)' : 'rgba(56, 189, 248, 0.5)';
+      headerEngineBadge.style.color = isCuda ? '#fbbf24' : '#38bdf8';
     }
 
     // Update HUD Metrics
     if (valEngine && valEngineSub) {
-      valEngine.textContent = isCuda ? 'NVIDIA CUDA' : 'CPU';
-      valEngineSub.textContent = isCuda ? '(SM Parallel)' : '(2D Serial)';
-      valEngine.className = isCuda ? 'stat-value text-emerald' : 'stat-value text-cyan';
+      valEngine.textContent = isCuda ? 'CUDA' : 'CPU';
+      valEngineSub.textContent = isCuda ? '(Emulated Model)' : '(Live Local)';
+      valEngine.className = isCuda ? 'stat-value text-amber' : 'stat-value text-cyan';
+    }
+
+    // Update notice box
+    if (engineNoticeBox && engineNoticeText) {
+      engineNoticeBox.classList.toggle('cuda-mode', isCuda);
+      if (isCuda) {
+        engineNoticeText.innerHTML = '<strong>Hardware Transparency:</strong> Your laptop has an Intel GPU. CUDA requires physical NVIDIA hardware. This mode emulates CUDA 16×16 tiling on your CPU using benchmark data from an NVIDIA Tesla T4 GPU.';
+      } else {
+        engineNoticeText.innerHTML = '<strong>Hardware Transparency:</strong> Running live on your local machine CPU using standard 2D arrays.';
+      }
     }
 
     updateEngineSpecs();
@@ -248,9 +268,9 @@
       const totalCells = (N * N).toLocaleString();
       if (isCuda) {
         const blocks = Math.ceil(N / 16);
-        showToast(`⚡ <strong>NVIDIA CUDA GPU Mode:</strong> ${blocks}×${blocks} blocks (16×16 threads, 32 th/warp, ${totalCells} parallel threads)`, true);
+        showToast(`⚡ <strong>CUDA Emulation Active:</strong> Emulating 16×16 block tiling logic & NVIDIA Tesla T4 speedup profile on local CPU`, true);
       } else {
-        showToast(`💻 <strong>CPU Mode:</strong> Sequential 2D pointer traversal (Host CPU single thread)`, false);
+        showToast(`💻 <strong>CPU Mode Active:</strong> Running live sequential 2D array simulation on host CPU`, false);
       }
     }
   }
@@ -268,22 +288,22 @@
     if (isCuda) {
       const blocksPerDim = Math.ceil(N / 16);
       if (specDevice) {
-        specDevice.textContent = 'NVIDIA GPU (CUDA SM Cores)';
-        specDevice.className = 'telemetry-value mono text-emerald';
+        specDevice.textContent = 'Emulated on Host CPU (Tesla T4 Model)';
+        specDevice.className = 'telemetry-value mono text-amber';
       }
-      if (specArch) specArch.textContent = 'game_of_life_cuda.cu (18×18 Shared Tile)';
-      if (specDispatch) specDispatch.textContent = `${blocksPerDim}×${blocksPerDim} Blocks • 256 Th/Blk (${totalCells} Threads)`;
+      if (specArch) specArch.textContent = '16×16 CUDA Tiling (Emulated)';
+      if (specDispatch) specDispatch.textContent = `Simulated ${blocksPerDim}×${blocksPerDim} Blocks (32 Th/Warp)`;
 
       const displayLatency = lastCudaComputeMs > 0 ? lastCudaComputeMs : (bench.cudaTotal * 10);
       if (specLatency) {
         specLatency.textContent = `${displayLatency.toFixed(2)} ms / gen`;
-        specLatency.className = 'telemetry-value mono text-emerald';
+        specLatency.className = 'telemetry-value mono text-amber';
       }
 
       if (specSpeedup) {
         const factor = bench.speedup;
         if (factor >= 1.0) {
-          specSpeedup.innerHTML = `<span class="text-emerald"><strong>${factor.toFixed(2)}×</strong> faster (NVIDIA CUDA)</span>`;
+          specSpeedup.innerHTML = `<span class="text-amber"><strong>${factor.toFixed(2)}×</strong> (NVIDIA Tesla T4 Benchmark)</span>`;
         } else {
           specSpeedup.innerHTML = `<span class="text-muted">${factor.toFixed(2)}× (CPU launch edge)</span>`;
         }
@@ -291,11 +311,11 @@
 
       if (valComputeTime) {
         valComputeTime.innerHTML = `${displayLatency.toFixed(2)} <small>ms</small>`;
-        valComputeTime.className = 'stat-value text-emerald';
+        valComputeTime.className = 'stat-value text-amber';
       }
     } else {
       if (specDevice) {
-        specDevice.textContent = 'Host CPU (x86_64 Core)';
+        specDevice.textContent = 'Local Machine CPU (Live)';
         specDevice.className = 'telemetry-value mono text-cyan';
       }
       if (specArch) specArch.textContent = 'game_of_life_cpu.c (2D Row-Major)';
@@ -782,6 +802,12 @@
   if (hdrBtnCuda) hdrBtnCuda.addEventListener('click', () => setEngine('cuda'));
   if (btnEngineCpu) btnEngineCpu.addEventListener('click', () => setEngine('cpu'));
   if (btnEngineCuda) btnEngineCuda.addEventListener('click', () => setEngine('cuda'));
+  if (btnOpenColab) {
+    btnOpenColab.addEventListener('click', () => {
+      window.open('https://colab.research.google.com', '_blank');
+      showToast('🚀 <strong>Google Colab:</strong> Upload <code>Conway_HPC_NVIDIA_CUDA.ipynb</code> to run on a physical NVIDIA Tesla T4 GPU!', true);
+    });
+  }
 
   /* Play / Pause Toggle */
   function togglePlayPause() {
