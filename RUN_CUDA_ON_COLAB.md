@@ -1,8 +1,7 @@
 # How to Run CUDA on Google Colab (Free NVIDIA GPU)
 
-> **Important Note for Your HPC Assignment:**  
-> Your laptop has an **Intel(R) Iris(R) Xe GPU**. NVIDIA CUDA code (`game_of_life_cuda.cu`) can only compile and execute on **physical NVIDIA GPUs**.  
-> The standard and accepted method for university HPC assignments when you don't have an NVIDIA laptop is to run your CUDA code on **Google Colab**, which provides a **free NVIDIA Tesla T4 GPU**.
+> **Hardware Note for Your HPC Assignment:**  
+> Your laptop is equipped with an **NVIDIA GeForce RTX 2050 GPU** (CUDA 13.1, Driver 592.82)! You can run real-time CUDA parallel simulation directly in the live interactive interface (`index.html`), compile native CUDA code locally, or use **Google Colab** (NVIDIA Tesla T4 GPU) as a cloud HPC benchmark environment.
 
 ---
 

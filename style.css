@@ -1276,6 +1276,27 @@ kbd {
   flex-wrap: wrap;
 }
 
+.btn-cuda-launch {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cuda-launch:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+  color: #fff;
+}
+
 .btn-colab-launch {
   background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
   color: #000;
@@ -1289,5 +1310,38 @@ kbd {
   box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
   color: #000;
 }
+
+.status-badge-tag.tag-success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.guard-status-banner.banner-success {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.guard-icon-circle.success {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.modal-guard-dialog.guard-verified {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(16, 185, 129, 0.15);
+}
+
+.engine-notice-box.cuda-active {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(52, 211, 153, 0.35);
+  color: #e5e7eb;
+}
+
+.engine-notice-box.cuda-active svg {
+  color: #34d399;
+}
+
 
 

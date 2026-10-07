@@ -50,8 +50,8 @@ make run_cpu
 # Run custom CPU grid size & iterations
 ./game_of_life_cpu 2048 100
 
-# Run CUDA batch calculation (requires NVIDIA GPU / Google Colab)
-# If your laptop has no NVIDIA GPU, follow: RUN_CUDA_ON_COLAB.md
+# Run CUDA batch calculation (GPU acceleration on your NVIDIA GeForce RTX 2050)
+# Optional Google Colab guide: RUN_CUDA_ON_COLAB.md
 make run_cuda
 
 # Benchmark CPU across multiple grid sizes
